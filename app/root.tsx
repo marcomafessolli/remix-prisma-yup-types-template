@@ -9,12 +9,15 @@ import {
   ScrollRestoration,
   useCatch,
   useLocation,
+  Link,
 } from 'remix'
 
 import type { LinksFunction } from 'remix'
 
+import styles from './styles/app.css'
+
 export let links: LinksFunction = () => {
-  return []
+  return [{ rel: 'stylesheet', href: styles }]
 }
 
 export default function App() {
@@ -58,7 +61,33 @@ function Document({
 }
 
 function Layout({ children }: React.PropsWithChildren<{}>) {
-  return <div>{children}</div>
+  return (
+    <div>
+      <div className='flex justify-center items-center border-b-2 border-gray-100 py-6 md:space-x-10'>
+        <nav className='hidden md:flex space-x-10'>
+          <Link
+            to='/'
+            className='text-base font-medium text-gray-500 hover:text-gray-900'
+          >
+            Home
+          </Link>
+          <Link
+            to='/users'
+            className='text-base font-medium text-gray-500 hover:text-gray-900'
+          >
+            Users
+          </Link>
+        </nav>
+      </div>
+      <main>
+        <div className='max-w-7xl mx-auto py-6 sm:px-6 lg:px-8'>
+          <div className='px-4 py-6 sm:px-0'>
+            <div className='h-96'>{children}</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
 }
 
 export function CatchBoundary() {

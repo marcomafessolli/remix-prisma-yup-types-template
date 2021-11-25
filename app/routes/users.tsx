@@ -15,9 +15,6 @@ export default function Users() {
 
   return (
     <div>
-      <h1>Users</h1>
-      <Link to='/'>Index</Link>
-
       <ul>
         {users.map((user) => (
           <li key={user.id} style={{ padding: '5px 0 5px' }}>
@@ -28,7 +25,7 @@ export default function Users() {
         ))}
       </ul>
 
-      <Link to='/users/create'>Create</Link>
+      <Link to='/users/new'>Create</Link>
       <Outlet />
     </div>
   )

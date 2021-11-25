@@ -4,3 +4,5 @@ node_modules
 /build
 /prisma/database
 /public/build
+
+/app/styles

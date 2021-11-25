@@ -21,7 +21,7 @@ export let action: ActionFunction = async ({ request }) => {
   }
 }
 
-export default function Create() {
+export default function New() {
   const errors = useActionData<ValidationError[]>()
   return <UserForm errors={errors} />
 }
