@@ -1,28 +1,27 @@
-import { useLoaderData, Outlet, Link, Form } from 'remix'
-import type { LoaderFunction } from 'remix'
+import { useLoaderData, Outlet, Link } from 'remix'
 
-import { PrismaClient } from '@prisma/client'
+import type { LoaderFunction } from 'remix'
 import type { User } from '@prisma/client'
 
-export let loader: LoaderFunction = async () => {
-  const prisma = new PrismaClient()
-  const users = await prisma.user.findMany()
+import { fetch } from '~/models/user'
 
-  prisma.$disconnect()
+export let loader: LoaderFunction = async () => {
+  const users = await fetch()
   return users
 }
 
 export default function Users() {
-  const users: User[] = useLoaderData()
+  const users = useLoaderData<User[]>()
 
   return (
     <div>
       <h1>Users</h1>
+      <Link to='/'>Index</Link>
 
       <ul>
         {users.map((user) => (
           <li key={user.id} style={{ padding: '5px 0 5px' }}>
-            <Link to={`${user.id}`} reloadDocument>
+            <Link to={`${user.id}`}>
               {user.name} - {user.email}
             </Link>
           </li>
@@ -30,10 +29,7 @@ export default function Users() {
       </ul>
 
       <Link to='/users/create'>Create</Link>
-
-      <div>
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   )
 }

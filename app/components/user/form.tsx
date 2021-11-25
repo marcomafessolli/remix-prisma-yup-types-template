@@ -1,27 +1,29 @@
 import { Form } from 'remix'
-import { ValidationError } from 'yup'
 
+import type { ValidationError } from 'yup'
 import type { User } from '@prisma/client'
 
-export default function UserForm({
+export function UserForm({
   errors,
   user,
 }: {
-  errors?: Array<ValidationError>
+  errors?: ValidationError[]
   user?: User
 }) {
   return (
     <Form method={user ? 'put' : 'post'} replace>
-      <div>
-        <p>Error</p>
-        <ul>
-          {errors?.map?.((error) => {
-            return error.errors.map((fieldError, index) => (
-              <li key={`${error.name}${index}`}>{fieldError}</li>
-            ))
-          })}
-        </ul>
-      </div>
+      {errors && (
+        <div>
+          <p>Error</p>
+          <ul>
+            {errors?.map?.((error) => {
+              return error.errors.map((fieldError, index) => (
+                <li key={`${error.name}${index}`}>{fieldError}</li>
+              ))
+            })}
+          </ul>
+        </div>
+      )}
 
       <label htmlFor='name'>Name</label>
       <div>

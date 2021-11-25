@@ -1,7 +1,10 @@
 import { useActionData, json, redirect } from 'remix'
 import type { ActionFunction } from 'remix'
 
-import { UserForm, createUser } from '~/components/user'
+import { UserForm } from '~/components/user/form'
+import type { ValidationError } from 'yup'
+
+import { create } from '~/models/user'
 
 export let action: ActionFunction = async ({ request }) => {
   const data = await request.formData()
@@ -10,14 +13,15 @@ export let action: ActionFunction = async ({ request }) => {
   const name = String(data.get('name'))
 
   try {
-    await createUser({ email, name })
+    await create({ email, name })
     return redirect('/users/')
-  } catch (errors) {
-    return json(errors, 422)
+  } catch (e) {
+    const errors = e as ValidationError
+    return json([...errors.inner], 422)
   }
 }
 
 export default function Create() {
-  const errors = useActionData()
+  const errors = useActionData<ValidationError[]>()
   return <UserForm errors={errors} />
 }

@@ -1,9 +1,14 @@
 import { useLoaderData, redirect, json, useActionData, Form } from 'remix'
-import { PrismaClient } from '@prisma/client'
 
-import { UserForm, updateUser, deleteUser } from '~/components/user'
+import type { ActionFunction, LoaderFunction } from 'remix'
+import type { ValidationError } from 'yup'
+import type { User } from '@prisma/client'
 
-export async function action({ request, params }) {
+import { UserForm } from '~/components/user/form'
+
+import { erase, update, find } from '~/models/user'
+
+export const action: ActionFunction = async ({ request, params }) => {
   const method = request.method
   const id: number = Number(params.id)
 
@@ -17,39 +22,28 @@ export async function action({ request, params }) {
   const email = String(data.get('email'))
   const name = String(data.get('name'))
 
-  switch (method) {
-    case 'DELETE':
-      try {
-        await deleteUser(id)
+  try {
+    switch (method) {
+      case 'DELETE':
+        await erase(id)
         return redirect('/users/')
-      } catch (errors) {
-        return json(errors, 422)
-      }
 
-    case 'POST':
-      return redirect(`/users/${id}`)
-
-    case 'PUT':
-      try {
-        await updateUser(id, { email, name })
+      case 'POST':
         return redirect(`/users/${id}`)
-      } catch (errors) {
-        return json(errors, 422)
-      }
+
+      case 'PUT':
+        await update(id, { email, name })
+        return redirect(`/users/${id}`)
+    }
+  } catch (e) {
+    const errors = e as ValidationError
+    return json([...errors.inner], 422)
   }
 }
 
-export async function loader({ params }) {
+export const loader: LoaderFunction = async ({ params }) => {
   const id: number = Number(params.id)
-  const prisma = new PrismaClient()
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id,
-    },
-  })
-
-  prisma.$disconnect()
+  const user = await find(id)
 
   if (!user) {
     throw new Response('Not Found', {
@@ -61,8 +55,8 @@ export async function loader({ params }) {
 }
 
 export default function User() {
-  const user = useLoaderData()
-  const errors = useActionData()
+  const user = useLoaderData<User>()
+  const errors = useActionData<ValidationError[]>()
 
   return (
     <div>
