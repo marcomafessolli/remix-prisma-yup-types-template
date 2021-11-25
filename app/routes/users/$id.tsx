@@ -1,12 +1,8 @@
 import { useLoaderData, redirect, json, useActionData, Form } from 'remix'
 import type { ActionFunction, LoaderFunction, HeadersFunction } from 'remix'
 
-import type { ValidationError } from 'yup'
-
-import { erase, update, find } from '~/models/user'
-import type { ActionUserUpdateErrors, User } from '~/models/user'
-
-import { parseToActionValidationErrors } from '~/utils/validation-json-format'
+import { db } from '~/utils/db.server'
+import type { User, UpdateUserActionResponse } from '~/models/user'
 
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
@@ -17,14 +13,21 @@ export let headers: HeadersFunction = ({ loaderHeaders }) => {
 
 export let action: ActionFunction = async ({ request, params }) => {
   const method = request.method
-  const id: number = Number(params.id)
+  let id: number
+  let queryUser: any
 
-  if (!id) {
+  try {
+    id = Number(params.id)
+    queryUser = await db.user.findUnique({
+      where: { id },
+    })
+  } catch (e) {
     throw new Response('Not Found', {
       status: 404,
     })
   }
 
+  const user = queryUser as User
   const data = await request.formData()
 
   const email = String(data.get('email'))
@@ -36,27 +39,27 @@ export let action: ActionFunction = async ({ request, params }) => {
   try {
     switch (actionMethod.toUpperCase()) {
       case 'DELETE':
-        await erase(id)
-        return redirect('/users/')
-
+        await user.delete()
+        break
       case 'PUT':
-        await update(id, { email, name })
-        return redirect(`/users/${id}`)
-
+        await user.update({ email, name })
+        break
       default:
         return json({}, 405)
     }
-  } catch (e) {
-    const errors = e as ValidationError
-    const actionErrors = parseToActionValidationErrors(errors)
-
-    return json(actionErrors, 422)
+  } catch (errors) {
+    return json({ errors }, 422)
   }
+
+  return json({}, { status: 301, headers: { Location: '/users' } })
 }
 
 export let loader: LoaderFunction = async ({ params }) => {
   const id: number = Number(params.id)
-  const user = await find(id)
+
+  const user = await db.user.findUnique({
+    where: { id },
+  })
 
   if (!user) {
     throw new Response('Not Found', {
@@ -74,7 +77,8 @@ export let loader: LoaderFunction = async ({ params }) => {
 
 export default function User() {
   const user = useLoaderData<User>()
-  const errors = useActionData<ActionUserUpdateErrors>()
+  const data = useActionData<UpdateUserActionResponse>()
+  const errors = data?.errors
 
   return (
     <div className='rounded-xl bg-gray-100 p-5'>
@@ -94,15 +98,14 @@ export default function User() {
           Name:
         </label>
         <div>
-          {user.name && (
-            <input
-              key={user.name}
-              type='text'
-              id='name'
-              name='name'
-              defaultValue={user.name}
-            />
-          )}
+          <input
+            key={user.name}
+            type='text'
+            id='name'
+            name='name'
+            placeholder='Name'
+            defaultValue={user.name || ''}
+          />
           {errors?.name?.map((error) => (
             <p key={error} className='text-red-500 text-xs capitalize mt-1'>
               {error}

@@ -1,12 +1,11 @@
 import { useLoaderData, Outlet, Link } from 'remix'
-
 import type { LoaderFunction } from 'remix'
-import type { User } from '@prisma/client'
 
-import { fetch } from '~/models/user'
+import { db } from '~/utils/db.server'
+import type { User } from '~/models/user'
 
 export let loader: LoaderFunction = async () => {
-  const users = await fetch()
+  const users = await db.user.findMany()
   return users
 }
 
@@ -18,7 +17,7 @@ export default function Users() {
       <h2 className='text-xl'>Users:</h2>
 
       <ul className='pt-2 pb-5'>
-        {users.map((user) => (
+        {users?.map((user) => (
           <li key={user.id}>
             <Link
               to={`${user.id}`}

@@ -1,12 +1,8 @@
-import { useActionData, json, redirect, Form } from 'remix'
+import { useActionData, json, Form } from 'remix'
 import type { ActionFunction, HeadersFunction } from 'remix'
 
-import type { ValidationError } from 'yup'
-
-import { create } from '~/models/user'
-import type { ActionUserCreateErrors } from '~/models/user'
-
-import { parseToActionValidationErrors } from '~/utils/validation-json-format'
+import { db } from '~/utils/db.server'
+import type { CreateUserActionResponse } from '~/models/user'
 
 export let headers: HeadersFunction = () => {
   return {
@@ -18,22 +14,22 @@ export let headers: HeadersFunction = () => {
 
 export let action: ActionFunction = async ({ request }) => {
   const data = await request.formData()
+
   const email = String(data.get('email'))
   const name = String(data.get('name'))
 
   try {
-    await create({ email, name })
-    return redirect('/users/')
-  } catch (e) {
-    const errors = e as ValidationError
-    const actionErrors = parseToActionValidationErrors(errors)
-
-    return json(actionErrors, 422)
+    await db.user.create({ data: { email, name } })
+  } catch (errors) {
+    return json({ errors }, 422)
   }
+
+  return json({}, 201)
 }
 
 export default function New() {
-  const errors = useActionData<ActionUserCreateErrors>()
+  const data = useActionData<CreateUserActionResponse>()
+  const errors = data?.errors
 
   return (
     <div className='rounded-xl bg-gray-100 p-5'>
