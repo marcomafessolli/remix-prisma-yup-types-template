@@ -4,6 +4,9 @@ import type { ActionFunction, HeadersFunction } from 'remix'
 import type { ValidationError } from 'yup'
 
 import { create } from '~/models/user'
+import type { ActionUserCreateErrors } from '~/models/user'
+
+import { parseToActionValidationErrors } from '~/utils/validation-json-format'
 
 export let headers: HeadersFunction = () => {
   return {
@@ -23,22 +26,30 @@ export let action: ActionFunction = async ({ request }) => {
     return redirect('/users/')
   } catch (e) {
     const errors = e as ValidationError
-    return json([...errors.inner], 422)
+    const actionErrors = parseToActionValidationErrors(errors)
+
+    return json(actionErrors, 422)
   }
 }
 
 export default function New() {
-  const errors = useActionData<ValidationError[]>()
+  const errors = useActionData<ActionUserCreateErrors>()
+
   return (
-    <div>
+    <div className='rounded-xl bg-gray-100 p-5'>
       <h3 className='mb-2 text-xl'>Create new User:</h3>
 
-      <Form method='post' replace>
+      <Form method='post' replace noValidate>
         <label htmlFor='name' className='mt-5 block py-1 text-sm text-gray-600'>
           Name:
         </label>
         <div>
           <input type='text' id='name' placeholder='Name' name='name' />
+          {errors?.name?.map((error) => (
+            <p key={error} className='text-red-500 text-xs capitalize mt-1'>
+              {error}
+            </p>
+          ))}
         </div>
 
         <label
@@ -49,22 +60,12 @@ export default function New() {
         </label>
         <div>
           <input type='email' id='email' placeholder='Email' name='email' />
+          {errors?.email?.map((error) => (
+            <p key={error} className='text-red-500 text-xs capitalize mt-1'>
+              {error}
+            </p>
+          ))}
         </div>
-
-        {errors && (
-          <ul className='pt-5'>
-            {errors?.map?.((error) => {
-              return error.errors.map((fieldError, index) => (
-                <li
-                  key={`${error.name}${index}`}
-                  className='text-red-400 capitalize text-sm'
-                >
-                  {fieldError}
-                </li>
-              ))
-            })}
-          </ul>
-        )}
 
         <button
           type='submit'

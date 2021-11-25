@@ -64,7 +64,7 @@ function Layout({ children }: React.PropsWithChildren<{}>) {
   return (
     <div>
       <div className='flex justify-center items-center border-b-2 border-gray-100 py-6 md:space-x-10'>
-        <nav className='hidden md:flex space-x-10'>
+        <nav className='flex space-x-10'>
           <Link
             to='/'
             className='flex align-center px-3 py-2 bg-purple-700 text-white rounded'
@@ -72,6 +72,7 @@ function Layout({ children }: React.PropsWithChildren<{}>) {
             Home
           </Link>
           <Link
+            prefetch='intent'
             to='/users'
             className='flex align-center px-3 py-2 bg-purple-700 text-white rounded'
           >

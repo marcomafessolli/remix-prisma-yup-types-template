@@ -1,10 +1,12 @@
 import { useLoaderData, redirect, json, useActionData, Form } from 'remix'
-
 import type { ActionFunction, LoaderFunction, HeadersFunction } from 'remix'
+
 import type { ValidationError } from 'yup'
-import type { User } from '@prisma/client'
 
 import { erase, update, find } from '~/models/user'
+import type { ActionUserUpdateErrors, User } from '~/models/user'
+
+import { parseToActionValidationErrors } from '~/utils/validation-json-format'
 
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
@@ -42,7 +44,9 @@ export let action: ActionFunction = async ({ request, params }) => {
     }
   } catch (e) {
     const errors = e as ValidationError
-    return json([...errors.inner], 422)
+    const actionErrors = parseToActionValidationErrors(errors)
+
+    return json(actionErrors, 422)
   }
 }
 
@@ -66,10 +70,10 @@ export let loader: LoaderFunction = async ({ params }) => {
 
 export default function User() {
   const user = useLoaderData<User>()
-  const errors = useActionData<ValidationError[]>()
+  const errors = useActionData<ActionUserUpdateErrors>()
 
   return (
-    <div>
+    <div className='rounded-xl bg-gray-100 p-5'>
       <div>
         <h2 className='text-xl'>User Details:</h2>
         <h4 className='text-gray-500 text-sm'>Name: {user.name}</h4>
@@ -94,6 +98,11 @@ export default function User() {
               defaultValue={user.name}
             />
           )}
+          {errors?.name?.map((error) => (
+            <p key={error} className='text-red-500 text-xs capitalize mt-1'>
+              {error}
+            </p>
+          ))}
         </div>
         <label
           htmlFor='email'
@@ -110,22 +119,12 @@ export default function User() {
             name='email'
             defaultValue={user.email}
           />
+          {errors?.email?.map((error) => (
+            <p key={error} className='text-red-500 text-xs capitalize mt-1'>
+              {error}
+            </p>
+          ))}
         </div>
-
-        {errors && (
-          <ul className='pt-5'>
-            {errors?.map?.((error) => {
-              return error.errors.map((fieldError, index) => (
-                <li
-                  key={`${error.name}${index}`}
-                  className='text-red-400 capitalize text-sm'
-                >
-                  {fieldError}
-                </li>
-              ))
-            })}
-          </ul>
-        )}
 
         <button
           type='submit'

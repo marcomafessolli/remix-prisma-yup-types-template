@@ -38,7 +38,7 @@ export default function Users() {
         Create New User
       </Link>
 
-      <div className='p-5 mt-5 rounded-xl bg-gray-100'>
+      <div className='mt-5'>
         <Outlet />
       </div>
     </div>
