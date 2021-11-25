@@ -67,13 +67,13 @@ function Layout({ children }: React.PropsWithChildren<{}>) {
         <nav className='hidden md:flex space-x-10'>
           <Link
             to='/'
-            className='text-base font-medium text-gray-500 hover:text-gray-900'
+            className='flex align-center px-3 py-2 bg-purple-700 text-white rounded'
           >
             Home
           </Link>
           <Link
             to='/users'
-            className='text-base font-medium text-gray-500 hover:text-gray-900'
+            className='flex align-center px-3 py-2 bg-purple-700 text-white rounded'
           >
             Users
           </Link>

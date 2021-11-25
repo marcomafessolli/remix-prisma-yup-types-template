@@ -46,7 +46,9 @@ export const update = async (id: number, data: Prisma.UserUpdateInput) => {
     where: {
       id,
     },
-    data,
+    data: {
+      ...data,
+    },
   })
 
   return user
