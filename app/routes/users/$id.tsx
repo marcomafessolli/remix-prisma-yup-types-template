@@ -26,21 +26,25 @@ export let action: ActionFunction = async ({ request, params }) => {
   }
 
   const data = await request.formData()
+
   const email = String(data.get('email'))
   const name = String(data.get('name'))
 
+  const __method = data.get('__method')
+  const actionMethod = String(__method || method)
+
   try {
-    switch (method) {
+    switch (actionMethod.toUpperCase()) {
       case 'DELETE':
         await erase(id)
         return redirect('/users/')
 
-      case 'POST':
-        return redirect(`/users/${id}`)
-
       case 'PUT':
         await update(id, { email, name })
         return redirect(`/users/${id}`)
+
+      default:
+        return json({}, 405)
     }
   } catch (e) {
     const errors = e as ValidationError
@@ -85,6 +89,7 @@ export default function User() {
       <h3 className='mt-5 mb-2 text-xl'>Edit User:</h3>
 
       <Form method='put' replace>
+        <input type='hidden' name='__method' value='PUT' />
         <label htmlFor='name' className='mt-5 block py-1 text-sm text-gray-600'>
           Name:
         </label>
@@ -135,6 +140,7 @@ export default function User() {
       </Form>
 
       <Form method='delete' action={`/users/${user.id}`}>
+        <input type='hidden' name='__method' value='DELETE' />
         <button
           type='submit'
           className='mt-2 px-3 py-2 bg-purple-700 text-white rounded'
