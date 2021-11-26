@@ -25,8 +25,9 @@ export const userMiddleware: Prisma.Middleware = async (params, next) => {
   }
 
   const { action } = params
+  console.log('userMiddleware', action in ['create', 'update'])
 
-  if (['create', 'update'].includes(action)) {
+  if (action in ['create', 'update']) {
     const { data } = params?.args
 
     try {
@@ -52,19 +53,19 @@ export const userMiddleware: Prisma.Middleware = async (params, next) => {
     },
   }
 
-  if (action === 'findUnique') {
-    return {
-      ...resolved,
-      ...mutations,
-    }
+  if (action === 'findMany') {
+    const result = resolved.map((user: PrismaUser) => {
+      return {
+        ...user,
+        ...mutations,
+      }
+    })
+
+    return result
   }
 
-  const result = resolved.map((user: PrismaUser) => {
-    return {
-      ...user,
-      ...mutations,
-    }
-  })
-
-  return result
+  return {
+    ...resolved,
+    ...mutations,
+  }
 }

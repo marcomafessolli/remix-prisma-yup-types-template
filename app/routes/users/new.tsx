@@ -24,7 +24,7 @@ export let action: ActionFunction = async ({ request }) => {
     return json({ errors }, 422)
   }
 
-  return json({}, 201)
+  return json({}, { status: 301, headers: { Location: '/users' } })
 }
 
 export default function New() {
