@@ -1,7 +1,7 @@
 export * from './user.prisma.db'
 
 import { Prisma } from '@prisma/client'
-import type { ActionValidationErrors as ActionError } from '~/utils/action.form.validation'
+import type { ActionValidationErrors as ActionError } from '~/utils/request.validation'
 
 export type UpdateUserActionResponse = {
   data?: any

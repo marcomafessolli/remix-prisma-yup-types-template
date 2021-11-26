@@ -1,8 +1,14 @@
-import { useLoaderData, redirect, json, useActionData, Form } from 'remix'
+import { useLoaderData, useActionData, Form } from 'remix'
 import type { ActionFunction, LoaderFunction, HeadersFunction } from 'remix'
 
 import { db } from '~/utils/db.server'
-import type { User, UpdateUserActionResponse } from '~/models/user'
+import type { User } from '~/models/user'
+
+import {
+  ActionRequestResponse,
+  CreateActionRequest,
+  REQUEST_METHOD,
+} from '~/utils/request.handler'
 
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
@@ -12,53 +18,47 @@ export let headers: HeadersFunction = ({ loaderHeaders }) => {
 }
 
 export let action: ActionFunction = async ({ request, params }) => {
-  const method = request.method
-  let id: number
-  let queryUser: any
+  const { req, res } = await CreateActionRequest<User>(request, params)
+  const id = req.query('id')
+
+  let user: User
 
   try {
-    id = Number(params.id)
-    queryUser = await db.user.findUnique({
-      where: { id },
-    })
+    user = (await db.user.findUnique({
+      where: { id: Number(id) },
+    })) as User
   } catch (e) {
     throw new Response('Not Found', {
       status: 404,
     })
   }
 
-  const user = queryUser as User
-  const data = await request.formData()
-
-  const email = String(data.get('email'))
-  const name = String(data.get('name'))
-
-  const __method = data.get('__method')
-  const actionMethod = String(__method || method)
+  const { name, email } = req.body
 
   try {
-    switch (actionMethod.toUpperCase()) {
-      case 'DELETE':
+    switch (req.method) {
+      case REQUEST_METHOD.DELETE:
         await user.delete()
         break
-      case 'PUT':
+      case REQUEST_METHOD.PUT:
         await user.update({ email, name })
         break
       default:
-        return json({}, 405)
+        return res.send({ status: 405 })
     }
   } catch (errors) {
-    return json({ errors }, 422)
+    return res.send({ errors, status: 422 })
   }
 
-  return json({}, { status: 301, headers: { Location: '/users' } })
+  return res.send({ redirect: '/users', status: 301 })
 }
 
-export let loader: LoaderFunction = async ({ params }) => {
-  const id: number = Number(params.id)
+export let loader: LoaderFunction = async ({ request, params }) => {
+  const { req, res } = await CreateActionRequest<User>(request, params)
+  const id = req.query('id')
 
   const user = await db.user.findUnique({
-    where: { id },
+    where: { id: Number(id) },
   })
 
   if (!user) {
@@ -67,18 +67,15 @@ export let loader: LoaderFunction = async ({ params }) => {
     })
   }
 
-  return json(user, {
-    headers: {
-      'Cache-Control': `public, max-age=${60 * 5}, s-maxage=${60 * 60 * 24}`,
-      Vary: 'Cookie',
-    },
-  })
+  return res.send({ data: { user }, status: 200 })
 }
 
 export default function User() {
-  const user = useLoaderData<User>()
-  const data = useActionData<UpdateUserActionResponse>()
-  const errors = data?.errors
+  const loaderData = useLoaderData<ActionRequestResponse<User>>()
+  const actionData = useActionData<ActionRequestResponse<User>>()
+
+  const user = loaderData.data?.user
+  const errors = actionData?.errors
 
   return (
     <div className='rounded-xl bg-gray-100 p-5'>
@@ -142,7 +139,7 @@ export default function User() {
         </button>
       </Form>
 
-      <Form method='delete' action={`/users/${user.id}`}>
+      <Form method='delete'>
         <input type='hidden' name='__method' value='DELETE' />
         <button
           type='submit'

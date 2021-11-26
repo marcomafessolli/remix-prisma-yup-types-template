@@ -3,7 +3,7 @@ import type { User as PrismaUser } from '@prisma/client'
 
 import { object, string } from 'yup'
 
-import { validateActionInputData } from '~/utils/action.form.validation'
+import { validateActionInputData } from '~/utils/request.validation'
 import { db } from '~/utils/db.server'
 
 const schema = object().shape({
@@ -25,9 +25,8 @@ export const userMiddleware: Prisma.Middleware = async (params, next) => {
   }
 
   const { action } = params
-  console.log('userMiddleware', action in ['create', 'update'])
 
-  if (action in ['create', 'update']) {
+  if (['create', 'update'].includes(action)) {
     const { data } = params?.args
 
     try {

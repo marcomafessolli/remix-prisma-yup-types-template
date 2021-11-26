@@ -2,7 +2,10 @@ import { useActionData, json, Form } from 'remix'
 import type { ActionFunction, HeadersFunction } from 'remix'
 
 import { db } from '~/utils/db.server'
-import type { CreateUserActionResponse } from '~/models/user'
+import type { User } from '~/models/user'
+
+import { CreateActionRequest } from '~/utils/request.handler'
+import type { ActionRequestResponse } from '~/utils/request.handler'
 
 export let headers: HeadersFunction = () => {
   return {
@@ -12,23 +15,21 @@ export let headers: HeadersFunction = () => {
   }
 }
 
-export let action: ActionFunction = async ({ request }) => {
-  const data = await request.formData()
-
-  const email = String(data.get('email'))
-  const name = String(data.get('name'))
+export let action: ActionFunction = async ({ request, params }) => {
+  const { req, res } = await CreateActionRequest<User>(request, params)
+  const { name, email } = req.body
 
   try {
     await db.user.create({ data: { email, name } })
   } catch (errors) {
-    return json({ errors }, 422)
+    return res.send({ errors, status: 422 })
   }
 
-  return json({}, { status: 301, headers: { Location: '/users' } })
+  return res.send({ redirect: '/users' })
 }
 
 export default function New() {
-  const data = useActionData<CreateUserActionResponse>()
+  const data = useActionData<ActionRequestResponse<User>>()
   const errors = data?.errors
 
   return (
