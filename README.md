@@ -1,53 +1,61 @@
-# Welcome to Remix!
+> Built with [Remix.run](https:/remix.run)
 
-- [Remix Docs](https://remix.run/docs)
+# Remix + Prisma + Yup + Loader/Action Request/Response Helpers and Types
 
-## Development
+Structure:
 
-From your terminal:
-
-```sh
-npm run dev
+```
+... remix generated code
+./prisma/
+./utils/
+./app/models
+/./app/utils/
 ```
 
-This starts your app in development mode, rebuilding assets on file changes.
+## `./prisma/`
 
-## Deployment
+Folder where prisma schema and migrations are stored
 
-First, build your app for production:
+## `./utils/`
 
-```sh
-npm run build
-```
+Folder where scripts are stored. Currently, there's one script that generates model types file to be used later by Typescript
 
-Then run the app in production mode:
+### `./utils/generate-type-models-file.ts`
 
-```sh
-npm start
-```
+Script that reads `./app/models/` directories and generates a `APP_MODELS` type
 
-Now you'll need to pick a host to deploy it to.
+## `./app/models/`
 
-### DIY
+Folder where models and validations are built. When running `npm run dev`, this template generates a file called `models.ts` which is built by reading the directories within `./app/models/` to be imported by `./app/utils/` and provide Typescript code suggestions.
 
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
+### `./app/models/index.ts`
 
-Make sure to deploy the output of `remix build`
+File that exports prisma middlewares defined by each model (can be automated). This is used by `./utils/db.server.ts` which imports `middlaewareHooks` and adds it to Prisma middleware.
 
-- `build/`
-- `public/build/`
+### `./app/models/validation.ts`
 
-### Using a Template
+Functions that validates/format request input data based on models schema (`yup.validate`). It also resolves errors to a object that has Typescript autocomplete based on Generics.
 
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
+### `./app/models/user/index.ts`
 
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+Files that exports `user.prisma.ts` types and middleware
+
+### `./app/models/user/user.prisma.ts`
+
+File that declares yup schema, prisma middleware and User types.
+
+## `./app/utils/`
+
+Folder that contains types and helpers for the remix application.
+
+### `./app/utils/db.server.ts`
+
+A copy of `db.server.ts` from `remix/jokes`
+
+### `./app/utils/action.handler.ts`
+
+File that provides types and functions to add typescript support based on generics (inspired on express)
+
+### `./app/utils/loader.handler.ts`
+
+File that provides types and functions to add typescript support based on generics (inspired on express)
