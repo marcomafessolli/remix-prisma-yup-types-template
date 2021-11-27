@@ -9,10 +9,9 @@ const models = fs
   .map((dir) => `'${dir.name}'`)
   .join(',')
 
-const fileTemplate = `
-const MODELS = [${models}] as const
+const fileTemplate = `const MODELS = [${models}] as const
 
 export type APP_MODELS = typeof MODELS[number]
 `
 
-fs.writeFileSync(path.join(modelDirectory, '/models.app.ts'), fileTemplate)
+fs.writeFileSync(path.join(modelDirectory, '/models.ts'), fileTemplate)

@@ -13,7 +13,7 @@
     "start": "remix-serve build",
     "prepare": "husky install",
     "lint": "lint-staged",
-    "generate-type-models": "node ./utils/models.map.js"
+    "generate-type-models": "node ./utils/generate-type-models-file.js"
   },
   "dependencies": {
     "@prisma/client": "^3.5.0",

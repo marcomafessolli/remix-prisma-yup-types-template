@@ -2,7 +2,7 @@ import { Params } from 'react-router'
 import { json } from 'remix'
 
 import type { RequestValidationErrors } from '~/utils/request.validation'
-import type { APP_MODELS } from '~/models/models.app'
+import type { APP_MODELS } from '~/models/models'
 
 type ActionModel<T> = {
   [P in APP_MODELS as string]?: T
