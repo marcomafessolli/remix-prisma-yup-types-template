@@ -1,24 +1,16 @@
 import { useLoaderData, useActionData, Form } from 'remix'
-import type { ActionFunction, LoaderFunction, HeadersFunction } from 'remix'
+import type { ActionFunction, LoaderFunction } from 'remix'
 
 import { db } from '~/utils/db.server'
 import type { User } from '~/models/user'
 
-import {
-  ActionRequestResponse,
-  CreateActionRequest,
-  REQUEST_METHOD,
-} from '~/utils/request.handler'
+import { resolve } from '~/utils/action.handler'
 
-export let headers: HeadersFunction = ({ loaderHeaders }) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control') ?? '',
-    Vary: loaderHeaders.get('Vary') ?? '',
-  }
-}
+import type { ActionData } from '~/utils/action.handler'
+import type { LoaderData } from '~/utils/loader.handler'
 
 export let action: ActionFunction = async ({ request, params }) => {
-  const { req, res } = await CreateActionRequest<User>(request, params)
+  const { req, res } = await resolve<User>(request, params)
   const id = req.query('id')
 
   let user: User
@@ -37,10 +29,10 @@ export let action: ActionFunction = async ({ request, params }) => {
 
   try {
     switch (req.method) {
-      case REQUEST_METHOD.DELETE:
+      case 'delete':
         await user.delete()
         break
-      case REQUEST_METHOD.PUT:
+      case 'put':
         await user.update({ email, name })
         break
       default:
@@ -54,7 +46,7 @@ export let action: ActionFunction = async ({ request, params }) => {
 }
 
 export let loader: LoaderFunction = async ({ request, params }) => {
-  const { req, res } = await CreateActionRequest<User>(request, params)
+  const { req, res } = await resolve<User>(request, params)
   const id = req.query('id')
 
   const user = await db.user.findUnique({
@@ -67,15 +59,15 @@ export let loader: LoaderFunction = async ({ request, params }) => {
     })
   }
 
-  return res.send({ data: { user }, status: 200 })
+  return res.send({ user })
 }
 
 export default function User() {
-  const loaderData = useLoaderData<ActionRequestResponse<User>>()
-  const actionData = useActionData<ActionRequestResponse<User>>()
+  const loaderResponse = useLoaderData<LoaderData<User>>()
+  const actionResponse = useActionData<ActionData<User>>()
 
-  const user = loaderData.data?.user
-  const errors = actionData?.errors
+  const user = loaderResponse.user!
+  const { errors } = actionResponse || {}
 
   return (
     <div className='rounded-xl bg-gray-100 p-5'>

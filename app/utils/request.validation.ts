@@ -1,6 +1,6 @@
 import type { BaseSchema, ValidationError as Error } from 'yup'
 
-export type ActionValidationErrors<T> = {
+export type RequestValidationErrors<T> = {
   [P in keyof T]?: string[]
 }
 
@@ -16,7 +16,7 @@ const formatErrors = (errors: Error) => {
   return form
 }
 
-export const validateActionInputData = async <T>(
+export const validateRequestInputData = async <T>(
   data: T,
   schema: BaseSchema,
 ) => {

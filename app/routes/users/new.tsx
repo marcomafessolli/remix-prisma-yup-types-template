@@ -4,8 +4,8 @@ import type { ActionFunction, HeadersFunction } from 'remix'
 import { db } from '~/utils/db.server'
 import type { User } from '~/models/user'
 
-import { CreateActionRequest } from '~/utils/request.handler'
-import type { ActionRequestResponse } from '~/utils/request.handler'
+import { resolve } from '~/utils/action.handler'
+import type { ActionData } from '~/utils/action.handler'
 
 export let headers: HeadersFunction = () => {
   return {
@@ -16,21 +16,21 @@ export let headers: HeadersFunction = () => {
 }
 
 export let action: ActionFunction = async ({ request, params }) => {
-  const { req, res } = await CreateActionRequest<User>(request, params)
+  const { req, res } = await resolve<User>(request, params)
   const { name, email } = req.body
 
   try {
     await db.user.create({ data: { email, name } })
   } catch (errors) {
-    return res.send({ errors, status: 422 })
+    return res.send({ errors }, { status: 400 })
   }
 
   return res.send({ redirect: '/users' })
 }
 
 export default function New() {
-  const data = useActionData<ActionRequestResponse<User>>()
-  const errors = data?.errors
+  const actionResponse = useActionData<ActionData<User>>()
+  const { errors } = actionResponse || {}
 
   return (
     <div className='rounded-xl bg-gray-100 p-5'>

@@ -7,12 +7,13 @@
     "build": "remix build",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "build-app": "npm run build:css && npm run build",
-    "dev": "remix dev",
+    "dev": "npm run generate-type-models && remix dev",
     "dev:css": "postcss styles --base styles --dir app/styles -w",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
     "prepare": "husky install",
-    "lint": "lint-staged"
+    "lint": "lint-staged",
+    "generate-type-models": "node ./utils/models.map.js"
   },
   "dependencies": {
     "@prisma/client": "^3.5.0",
