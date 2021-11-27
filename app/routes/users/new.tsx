@@ -1,4 +1,4 @@
-import { useActionData, json, Form } from 'remix'
+import { useActionData, Form } from 'remix'
 import type { ActionFunction, HeadersFunction } from 'remix'
 
 import { db } from '~/utils/db.server'

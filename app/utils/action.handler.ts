@@ -1,7 +1,7 @@
 import { Params } from 'react-router'
 import { json } from 'remix'
 
-import type { RequestValidationErrors } from '~/utils/request.validation'
+import type { ModelValidationErrors } from '~/models/validation'
 import type { APP_MODELS } from '~/models/models'
 
 type ActionModel<T> = {
@@ -9,7 +9,7 @@ type ActionModel<T> = {
 }
 
 export type ActionData<T> = ActionModel<T> & {
-  errors?: RequestValidationErrors<T>
+  errors?: ModelValidationErrors<T>
 }
 
 type ActionResponseConfiguration = {

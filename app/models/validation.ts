@@ -1,29 +1,26 @@
 import type { BaseSchema, ValidationError as Error } from 'yup'
 
-export type RequestValidationErrors<T> = {
+export type ModelValidationErrors<T> = {
   [P in keyof T]?: string[]
 }
 
-const formatErrors = (errors: Error) => {
+const formatModelValidationErrors = (errors: Error) => {
   const validationErrors = errors.inner
-  let form = {} as any
+  let modelErrors = {} as any
 
   for (const error of validationErrors) {
     const { path } = error
-    form[path!] = error.errors
+    modelErrors[path!] = error.errors
   }
 
-  return form
+  return modelErrors
 }
 
-export const validateRequestInputData = async <T>(
-  data: T,
-  schema: BaseSchema,
-) => {
+export const validate = async <T>(data: T, schema: BaseSchema) => {
   try {
     await schema.validate(data, { abortEarly: false })
   } catch (errors) {
-    const actionValidationErrors = formatErrors(errors as Error)
+    const actionValidationErrors = formatModelValidationErrors(errors as Error)
     throw actionValidationErrors
   }
 }

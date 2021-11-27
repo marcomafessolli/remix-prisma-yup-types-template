@@ -3,7 +3,7 @@ import type { User as PrismaUser } from '@prisma/client'
 
 import { object, string } from 'yup'
 
-import { validateRequestInputData } from '~/utils/request.validation'
+import { validate } from '~/models/validation'
 import { db } from '~/utils/db.server'
 
 const schema = object().shape({
@@ -30,7 +30,7 @@ export const userMiddleware: Prisma.Middleware = async (params, next) => {
     const { data } = params?.args
 
     try {
-      await validateRequestInputData(data, schema)
+      await validate(data, schema)
     } catch (error) {
       throw error
     }
